@@ -1,6 +1,6 @@
 """NUmber platform for dahua."""
 from homeassistant.core import HomeAssistant
-from homeassistant.components.Number import NumberEntity
+from homeassistant.components.number import NumberEntity
 from homeassistant.helpers import entity_platform
 from custom_components.dahua import DahuaDataUpdateCoordinator
 
@@ -8,6 +8,7 @@ from .const import DOMAIN, ZOOM_ICON, FOCUS_ICON
 from .entity import DahuaBaseEntity
 
 SERVICE_AUTOFOCUS = "autofocus"
+
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Setup sensor platform."""
@@ -23,10 +24,11 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             "async_auto_focus"
         )
 
+
 class DahuaCameraZoomNumber(DahuaBaseEntity, NumberEntity):
     """dahua Camera Zoom"""
 
-    async def async_set_native_value(self, value: float) -> None: 
+    async def async_set_native_value(self, value: float) -> None:
         """Turn off/disable motion detection."""
         await self._coordinator.client.async_set_zoom_v1(value)
         await self._coordinator.async_refresh()
@@ -45,7 +47,7 @@ class DahuaCameraZoomNumber(DahuaBaseEntity, NumberEntity):
 
     @property
     def icon(self):
-        """Return the icon of this switch."""
+        """Return the icon of this Number."""
         return ZOOM_ICON
 
     @property
@@ -54,24 +56,24 @@ class DahuaCameraZoomNumber(DahuaBaseEntity, NumberEntity):
         Value is fetched from api.getFocusStatus
         """
         return self._coordinator.get_zoom()
-    
+
     @property
     def native_max_value(self):
         return 1
-    
+
     @property
     def native_step(self):
         return 0.000001
-    
+
     @property
     def native_unit_of_measurement(self):
         return "%"
-    
-    
+
+
 class DahuaCameraFocusNumber(DahuaBaseEntity, NumberEntity):
     """dahua Camera Focus"""
 
-    async def async_set_native_value(self, value: float) -> None: 
+    async def async_set_native_value(self, value: float) -> None:
         """Turn off/disable motion detection."""
         await self._coordinator.client.async_set_focus_v1(value)
         await self._coordinator.async_refresh()
@@ -99,19 +101,19 @@ class DahuaCameraFocusNumber(DahuaBaseEntity, NumberEntity):
         Value is fetched from api.getFocusStatus
         """
         return self._coordinator.get_focus()
-    
+
     @property
     def native_max_value(self):
         return 1
-    
+
     @property
     def native_step(self):
         return 0.000001
-    
+
     @property
     def native_unit_of_measurement(self):
         return "%"
-    
+
     async def async_auto_focus(self):
         """ Handles the service call from SERVICE_SET_INFRARED_MODE to set zoom and focus """
         await self._coordinator.client.async_auto_focus_v1()

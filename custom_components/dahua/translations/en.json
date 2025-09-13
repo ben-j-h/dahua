@@ -39,7 +39,8 @@
                     "switch": "Switch enabled",
                     "light": "Light enabled",
                     "select": "Select enabled",
-                    "camera": "Camera enabled"
+                    "camera": "Camera enabled",
+                    "number": "Zoom/Focus enabled"
                 }
             }
         }
