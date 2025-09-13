@@ -30,7 +30,8 @@ class DahuaCameraZoomNumber(DahuaBaseEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Turn off/disable motion detection."""
-        await self._coordinator.client.async_set_zoom_v1(value)
+        focus = self._coordinator.get_focus()
+        await self._coordinator.client.async_adjustfocus_v1(str(focus), str(value))
         await self._coordinator.async_refresh()
 
     @property
@@ -75,7 +76,8 @@ class DahuaCameraFocusNumber(DahuaBaseEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Turn off/disable motion detection."""
-        await self._coordinator.client.async_set_focus_v1(value)
+        zoom = self._coordinator.get_zoom()
+        await self._coordinator.client.async_adjustfocus_v1(str(value), str(zoom))
         await self._coordinator.async_refresh()
 
     @property
