@@ -115,6 +115,7 @@ class DahuaDataUpdateCoordinator(DataUpdateCoordinator):
         self._supports_ptz_position = False
         self._supports_lighting = False
         self._supports_floodlightmode = False
+        self._supports_zoom_focus = False
         self._serial_number: str
         self._profile_mode = "0"
         self._preset_position = "0"
@@ -291,7 +292,14 @@ class DahuaDataUpdateCoordinator(DataUpdateCoordinator):
                     self._supports_lighting_v2 = False
                     pass
                 _LOGGER.info("Device supports Lighting_V2=%s", self._supports_lighting_v2)
-
+                
+                try:
+                    await self.client.async_get_zoomfocus_v1()
+                    self._supports_zoom_focus = True
+                except ClientError:
+                    self._supports_zoom_focus = False
+                    pass
+                _LOGGER.info("Device supports Zoom/Focus=%s", self._supports_zoom_focus)
 
                 if not is_doorbell:
                     # Start the event listeners for IP cameras
@@ -366,6 +374,8 @@ class DahuaDataUpdateCoordinator(DataUpdateCoordinator):
                 coros.append(asyncio.ensure_future(self.client.async_get_light_global_enabled()))
             if self._supports_lighting_v2:   #add lighing_v2 API if it is supported
                 coros.append(asyncio.ensure_future(self.client.async_get_lighting_v2()))
+            if self._supports_zoom_focus:
+                coros.append(asyncio.ensure_future(self.client.async_get_zoomfocus_v1()))
 
 
             # Gather results and update the data map
@@ -754,6 +764,10 @@ class DahuaDataUpdateCoordinator(DataUpdateCoordinator):
     def supports_smart_motion_detection_amcrest(self) -> bool:
         """ True if smart motion detection is supported for an amcrest device"""
         return self.model == "AD410" or self.model == "DB61i"
+    
+    def supports_focus_zoom(self) -> bool:
+        """ True if camera is varifocal """
+        return self._supports_zoom_focus
 
     def get_vto_client(self) -> DahuaVTOClient:
         """
@@ -761,6 +775,13 @@ class DahuaDataUpdateCoordinator(DataUpdateCoordinator):
         ways to call a VTO device and the VTO client will handle that. For example, to hang up a call
         """
         return self.dahua_vto_event_thread.vto_client
+    
+    def get_zoom(self) -> float:
+        return float(self.data.get("status.Zoom")) if self._supports_zoom_focus else 0
+        
+    
+    def get_focus(self) -> float:
+        return float(self.data.get("status.Focus")) if self._supports_zoom_focus else 0        
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

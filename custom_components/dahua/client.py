@@ -400,6 +400,22 @@ class DahuaClient:
         url = "/cgi-bin/devVideoInput.cgi?action=adjustFocus&focus={0}&zoom={1}".format(focus, zoom)
         return await self.get(url, True)
 
+    async def async_auto_focus_v1(self):
+        """
+        async_adjustfocus will set the zoom and focus
+        """
+
+        url = "/cgi-bin/devVideoInput.cgi?action=autoFocus"
+        return await self.get(url, True)
+
+    async def async_get_zoomfocus_v1(self):
+        """
+        async_getfocus will set the zoom and focus
+        """
+
+        url = "/cgi-bin/devVideoInput.cgi?action=getFocusStatus"
+        return await self.get(url)
+
     async def async_setprivacymask(self, index: int, enabled: bool):
         """
         async_setprivacymask will enable or disable the privacy mask
