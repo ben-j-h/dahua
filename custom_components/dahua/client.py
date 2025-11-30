@@ -48,8 +48,8 @@ class DahuaClient:
         Returns the RTSP url for the supplied subtype (subtype is 0=Main stream, 1=Sub stream)
         """
         url = "rtsp://{0}:{1}@{2}:{3}/cam/realmonitor?channel={4}&subtype={5}".format(
-            quote(self._username),
-            quote(self._password),
+            quote(self._username, safe=''),
+            quote(self._password, safe=''),
             self._address,
             self._rtsp_port,
             channel,
@@ -298,6 +298,23 @@ class DahuaClient:
         url = "/cgi-bin/configManager.cgi?action=getConfig&name=SmartMotionDetect"
         return await self.get(url)
 
+    async def async_get_ptz_position(self) -> dict:
+        """
+        Gets the status of PTZ Example output:
+        status.Action=Preset
+        status.MoveStatus=Idle
+        status.PTS=0
+        status.Postion[0]=91.600000
+        status.Postion[1]=-2.600000
+        status.Postion[2]=1.000000
+        status.PresetID=2
+        status.Sequence=0
+        status.UTC=0
+        status.ZoomStatus=Idle
+        """
+        url = "/cgi-bin/ptz.cgi?action=getStatus"
+        return await self.get(url)
+
     async def async_get_light_global_enabled(self) -> dict:
         """
         Returns the state of the Amcrest blue ring light (if it's on or off)
@@ -346,6 +363,17 @@ class DahuaClient:
 
         url = "/cgi-bin/configManager.cgi?action=setConfig&Lighting[{channel}][0].Mode={mode}&Lighting[{channel}][0].MiddleLight[0].Light={brightness}".format(
             channel=channel, mode=mode, brightness=brightness
+        )
+        return await self.get(url)
+
+    async def async_goto_preset_position(self, channel: int, position: int) -> dict:
+        """
+        async_goto_preset_position will go to a specific preset position
+        Position should be between 1 and 10 inclusive.
+        """
+
+        url = "/cgi-bin/ptz.cgi?action=start&channel={0}&code=GotoPreset&arg1=0&arg2={1}&arg3=0".format(
+            channel, position
         )
         return await self.get(url)
 
@@ -758,7 +786,7 @@ class DahuaClient:
                 async for data, _ in response.content.iter_chunks():
                     on_receive(data, channel)
             except Exception as exception:
-                _LOGGER.exception(exception)
+                pass
             finally:
                 if response is not None:
                     response.close()
